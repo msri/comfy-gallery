@@ -13,7 +13,9 @@ class Gallery::Photo < ActiveRecord::Base
         :admin_full   => '800x600>',
         :admin_thumb  => '40x30#'
       }
-    }
+    },
+    :path => ':rails_root/paperclip/galleries/:gallery_id/:id_partition/:style/:filename',
+    :url => '/system/paperclip/galleries/:gallery_id/:id_partition/:style/:filename',
   )
   has_attached_file :image, upload_options
 
@@ -36,7 +38,7 @@ class Gallery::Photo < ActiveRecord::Base
     :content_type => %w(image/jpeg image/pjpeg image/gif image/png image/x-png),
     :message      => 'Please only upload .jpg, .jpeg, .gif or .png files.'
   validates_attachment_size :image,
-    :less_than    => 5.megabytes
+    :less_than    => 20.megabytes
 
   attr_accessible :gallery, :title, :description, :image, :embed_code
 
@@ -80,4 +82,10 @@ private
     image.reprocess!
   end
 
+  # interpolate in paperclip
+  Paperclip.interpolates :gallery_id do |attachment, style|
+    return super() if attachment.nil?
+
+    attachment.instance.gallery.id.to_s
+  end
 end
